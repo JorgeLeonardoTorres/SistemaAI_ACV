@@ -1,0 +1,17 @@
+# Archivos y carpetas innecesarios
+.DS_Store
+.vscode/
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+.pytest_cache/
+.env
+
+# Entornos virtuales
+my_env/
+venv/
+
+# Archivos sensibles
+config.json
+keys/
+
