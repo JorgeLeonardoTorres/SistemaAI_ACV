@@ -17,6 +17,8 @@ project_root = os.path.abspath(os.path.join(script_dir, "..", ".."))
 # Agregar la ruta "src" al sys.path para que Python reconozca los módulos
 sys.path.append(project_root)
 
+import os
+os.system("pip install Pillow")
 
 # Importación de librerías clave
 import numpy as np
