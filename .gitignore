@@ -15,3 +15,32 @@ venv/
 config.json
 keys/
 
+# Ignorar entornos virtuales
+EntornoVirtualTFEIA/
+venv/
+.env/
+
+# Ignorar caché y archivos temporales de Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignorar archivos y carpetas pesadas
+*.pth
+*.pkl
+*.h5
+*.csv
+*.npy
+*.npz
+*.dcm
+*.zip
+*.tar
+*.tar.gz
+*.7z
+__pycache__/
+results/
+data/
+notebooks/
+temp/
+Word_Vectors_Models_FastTexts_ES/
+
