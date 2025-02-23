@@ -8,6 +8,9 @@
 import sys
 import os
 
+# Agregar la carpeta src al path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
 # Obtener la ruta del directorio actual del script
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
