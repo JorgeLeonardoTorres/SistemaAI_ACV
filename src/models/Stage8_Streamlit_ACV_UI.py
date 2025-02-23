@@ -99,150 +99,160 @@ if "diagnosis_message" not in st.session_state:
 GITHUB_IMAGE_URL_1 = "https://raw.githubusercontent.com/JorgeLeonardoTorres/SistemaAI_ACV/main/src/assets/fondo_sistema_acv.png"
 GITHUB_IMAGE_URL_2 = "https://raw.githubusercontent.com/JorgeLeonardoTorres/SistemaAI_ACV/main/src/assets/fondo_sistema_acv1.png"
 
+@st.cache_resource
 def set_background(menu_option):
-    if menu_option == "Inicio":
-        image_url = GITHUB_IMAGE_URL_1
-    else:
-        image_url = GITHUB_IMAGE_URL_2
+    """Carga una imagen de fondo desde GitHub y la establece en la interfaz de Streamlit."""
+    
+    # Seleccionar la URL de la imagen según la opción del menú
+    image_url = GITHUB_IMAGE_URL_1 if menu_option == "Inicio" else GITHUB_IMAGE_URL_2
 
-    response = requests.get(image_url)
+    try:
+        # Descargar la imagen desde GitHub
+        response = requests.get(image_url)
 
-    if response.status_code == 200:
-        image = base64.b64encode(BytesIO(response.content).read()).decode()
+        # Verificar que la respuesta sea exitosa
+        if response.status_code == 200:
+            # Convertir la imagen a base64
+            image = base64.b64encode(BytesIO(response.content).read()).decode()
 
-    background_css = f"""
-    <style>
-    .stApp {{
-        /* Fondo principal de la app con superposición */
-        background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
-                    url("data:image/png;base64,{image}");
-        background-size: cover;
-        background-attachment: fixed;
-        background-position: center;
-        color: #ECECEC; /* Texto claro por defecto */
-        font-family: 'Roboto', sans-serif;
-        padding-top: 50px;
-        padding-bottom: 50px;
-    }}
+            # Definir el CSS con la imagen como fondo
+            background_css = f"""
+            <style>
+            .stApp {{
+                /* Fondo principal de la app con superposición */
+                background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                            url("data:image/png;base64,{image}");
+                background-size: cover;
+                background-attachment: fixed;
+                background-position: center;
+                color: #ECECEC; /* Texto claro por defecto */
+                font-family: 'Roboto', sans-serif;
+                padding-top: 50px;
+                padding-bottom: 50px;
+            }}
+        
+            h1, h2, h3 {{
+                color: #FFFFFF;
+                text-shadow: 2px 2px 6px black;
+                margin: 20px 0;
+            }}
+        
+            p, label, span, div {{
+                color: #ECECEC !important;
+            }}
+        
+            .stButton>button {{
+                background-color: #1e3d59;
+                color: #FFFFFF;
+                border-radius: 10px;
+                padding: 12px 24px;
+                font-weight: bold;
+                border: none;
+                transition: 0.3s;
+            }}
+            .stButton>button:hover {{
+                background-color: #163447;
+            }}
+        
+            .block-container {{
+                background: rgba(0, 0, 0, 0.4);
+                padding: 30px;
+                border-radius: 20px;
+                margin: 20px auto;
+                max-width: 700px;
+            }}
+        
+            /* Barra lateral */
+            .sidebar .sidebar-content {{
+                background: rgba(30, 61, 89, 0.9);
+                padding: 15px;
+                border-radius: 15px;
+            }}
+        
+            /* Mensajes de alerta (info, success, warning, error) */
+            div[data-baseweb="alert"] {{
+                border-radius: 0.75rem;
+                margin: 1rem 0;
+                padding: 1rem;
+                color: #ECECEC !important;
+                background-color: rgba(255, 255, 255, 0.1) !important;
+                border-left: 0.4rem solid #00c0f0;
+            }}
+            div[data-baseweb="alert"] p {{
+                color: #ECECEC !important;
+                margin: 0;
+            }}
+            div[data-baseweb="alert"][aria-label="info"] {{
+                border-left-color: #17a2b8 !important;
+            }}
+            div[data-baseweb="alert"][aria-label="success"] {{
+                border-left-color: #28a745 !important;
+            }}
+            div[data-baseweb="alert"][aria-label="warning"] {{
+                border-left-color: #ffc107 !important;
+            }}
+            div[data-baseweb="alert"][aria-label="error"] {{
+                border-left-color: #dc3545 !important;
+            }}
+        
+            /* ====================== 
+               Ajustes para formularios 
+               ====================== */
+        
+            /* INPUTS y TEXTAREAS:
+               Fondo gris-azulado oscuro, texto claro, borde sutil */
+            .stTextInput input,
+            .stTextArea textarea {{
+                background-color: #2c3e50 !important;  /* Gris-azulado oscuro */
+                color: #ecf0f1 !important;            /* Texto claro */
+                border: 1px solid #5f7788 !important; /* Borde tenue */
+            }}
+            .stTextInput input::placeholder,
+            .stTextArea textarea::placeholder {{
+                color: #95a5a6 !important; /* Placeholder gris claro */
+            }}
+        
+            /* SELECTBOX:
+               Cuadro principal y menú desplegable en #2c3e50, texto claro */
+            /* 1) Cuadro cuando el select está cerrado */
+            .stSelectbox [data-baseweb="select"] > div {{
+                background-color: #2c3e50 !important;
+                color: #ecf0f1 !important;
+                border: 1px solid #5f7788 !important;
+            }}
+            /* 2) Menú desplegable */
+            .stSelectbox [data-baseweb="menu"] {{
+                background-color: #2c3e50 !important;
+                color: #ecf0f1 !important;
+                border: 1px solid #5f7788 !important;
+            }}
+            /* 3) Opciones dentro del menú */
+            .stSelectbox [data-baseweb="option"] {{
+                background-color: #2c3e50 !important;
+                color: #ecf0f1 !important;
+            }}
+            .stSelectbox [data-baseweb="option"]:hover {{
+                background-color: #34495e !important; /* Un tono más claro */
+                color: #ecf0f1 !important;
+            }}
+        
+            /* Ajuste de label en inputs (opcional) */
+            label {{
+                color: #ECECEC !important;
+            }}
+            </style>
+            """
+            # Aplicar el CSS en Streamlit
+            st.markdown(background_css, unsafe_allow_html=True)
+        
+        else:
+            st.error(f"Error al cargar la imagen de fondo desde GitHub. Código de estado: {response.status_code}")
 
-    h1, h2, h3 {{
-        color: #FFFFFF;
-        text-shadow: 2px 2px 6px black;
-        margin: 20px 0;
-    }}
-
-    p, label, span, div {{
-        color: #ECECEC !important;
-    }}
-
-    .stButton>button {{
-        background-color: #1e3d59;
-        color: #FFFFFF;
-        border-radius: 10px;
-        padding: 12px 24px;
-        font-weight: bold;
-        border: none;
-        transition: 0.3s;
-    }}
-    .stButton>button:hover {{
-        background-color: #163447;
-    }}
-
-    .block-container {{
-        background: rgba(0, 0, 0, 0.4);
-        padding: 30px;
-        border-radius: 20px;
-        margin: 20px auto;
-        max-width: 700px;
-    }}
-
-    /* Barra lateral */
-    .sidebar .sidebar-content {{
-        background: rgba(30, 61, 89, 0.9);
-        padding: 15px;
-        border-radius: 15px;
-    }}
-
-    /* Mensajes de alerta (info, success, warning, error) */
-    div[data-baseweb="alert"] {{
-        border-radius: 0.75rem;
-        margin: 1rem 0;
-        padding: 1rem;
-        color: #ECECEC !important;
-        background-color: rgba(255, 255, 255, 0.1) !important;
-        border-left: 0.4rem solid #00c0f0;
-    }}
-    div[data-baseweb="alert"] p {{
-        color: #ECECEC !important;
-        margin: 0;
-    }}
-    div[data-baseweb="alert"][aria-label="info"] {{
-        border-left-color: #17a2b8 !important;
-    }}
-    div[data-baseweb="alert"][aria-label="success"] {{
-        border-left-color: #28a745 !important;
-    }}
-    div[data-baseweb="alert"][aria-label="warning"] {{
-        border-left-color: #ffc107 !important;
-    }}
-    div[data-baseweb="alert"][aria-label="error"] {{
-        border-left-color: #dc3545 !important;
-    }}
-
-    /* ====================== 
-       Ajustes para formularios 
-       ====================== */
-
-    /* INPUTS y TEXTAREAS:
-       Fondo gris-azulado oscuro, texto claro, borde sutil */
-    .stTextInput input,
-    .stTextArea textarea {{
-        background-color: #2c3e50 !important;  /* Gris-azulado oscuro */
-        color: #ecf0f1 !important;            /* Texto claro */
-        border: 1px solid #5f7788 !important; /* Borde tenue */
-    }}
-    .stTextInput input::placeholder,
-    .stTextArea textarea::placeholder {{
-        color: #95a5a6 !important; /* Placeholder gris claro */
-    }}
-
-    /* SELECTBOX:
-       Cuadro principal y menú desplegable en #2c3e50, texto claro */
-    /* 1) Cuadro cuando el select está cerrado */
-    .stSelectbox [data-baseweb="select"] > div {{
-        background-color: #2c3e50 !important;
-        color: #ecf0f1 !important;
-        border: 1px solid #5f7788 !important;
-    }}
-    /* 2) Menú desplegable */
-    .stSelectbox [data-baseweb="menu"] {{
-        background-color: #2c3e50 !important;
-        color: #ecf0f1 !important;
-        border: 1px solid #5f7788 !important;
-    }}
-    /* 3) Opciones dentro del menú */
-    .stSelectbox [data-baseweb="option"] {{
-        background-color: #2c3e50 !important;
-        color: #ecf0f1 !important;
-    }}
-    .stSelectbox [data-baseweb="option"]:hover {{
-        background-color: #34495e !important; /* Un tono más claro */
-        color: #ecf0f1 !important;
-    }}
-
-    /* Ajuste de label en inputs (opcional) */
-    label {{
-        color: #ECECEC !important;
-    }}
-    </style>
-    """
-    st.markdown(background_css, unsafe_allow_html=True)
-    else:
-        st.error("Error al cargar la imagen de fondo desde GitHub.")
+    except Exception as e:
+        st.error(f"❌ Error al establecer el fondo: {str(e)}")
 
 # Llamar a la función en la interfaz
 set_background(st.session_state.get("menu_option", "Inicio"))
-
 # *** --------------------------------- *** *** ------------------------------------- *** 
 
 # Módulo 4.: Carga de los modelos Faster R - CNN y BERT
