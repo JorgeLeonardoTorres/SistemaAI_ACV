@@ -238,12 +238,12 @@ def load_models():
     ischaemic_model_path = hf_hub_download(repo_id="JorgeLeonardo/Models_ACV", filename="ischaemic_best_complete_model.pth")
     bert_model_path = hf_hub_download(repo_id="JorgeLeonardo/Models_ACV", filename="BERT_augmented_stroke_classifier_train.pth")
     
-    hemorrhagic_model = torch.load(hemorrhagic_model_path, map_location=device)
-    ischaemic_model = torch.load(ischaemic_model_path, map_location=device)
+    hemorrhagic_model = torch.load(hemorrhagic_model_path, map_location=device, weights_only=False)
+    ischaemic_model = torch.load(ischaemic_model_path, map_location=device, weights_only=False)
 
     num_labels = 36  # Número de etiquetas en el dataset
     bert_model = BERTMultiLabelClassifier("bert-base-multilingual-cased", num_labels)  # Modelo multi-label
-    bert_model.load_state_dict(torch.load(bert_model_path, map_location=device))
+    bert_model.load_state_dict(torch.load(bert_model_path, map_location=device, weights_only=False))
     
     hemorrhagic_model.eval()
     ischaemic_model.eval()
