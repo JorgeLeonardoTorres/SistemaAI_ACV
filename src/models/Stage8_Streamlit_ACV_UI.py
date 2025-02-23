@@ -8,6 +8,7 @@
 import sys
 import os
 import json
+from datetime import datetime
 
 # Obtener el directorio actual del script
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -486,8 +487,6 @@ def classify_image(image, hemorrhagic_model, ischaemic_model):
 # *** --------------------------------- *** *** ------------------------------------- *** 
 
 # Módulo 9.: Función para generar ID de registro
-def generate_id():
-    return f"{random.randint(0, 9999):04}"
 
 # 🚀 Datos de GitHub
 GITHUB_USERNAME = "JorgeLeonardoTorres"  # Tu usuario de GitHub
@@ -499,25 +498,44 @@ GITHUB_TOKEN = os.getenv("GitHub_Token")  # Token de GitHub (configurado en Stre
 # 📍 URL del archivo en GitHub
 GITHUB_API_URL = f"https://api.github.com/repos/{GITHUB_USERNAME}/{REPO_NAME}/contents/{FILE_PATH}"
 
+def generate_id():
+    """Genera un ID único de 4 dígitos."""
+    return f"{random.randint(0, 9999):04}"
+
 def load_existing_records():
     """Carga los registros existentes desde GitHub."""
     headers = {"Authorization": f"token {GITHUB_TOKEN}"}
 
     response = requests.get(GITHUB_API_URL, headers=headers)
+    
     if response.status_code == 200:
         content = response.json()
         file_sha = content.get("sha", None)  # SHA necesario para actualizar el archivo
-        df = pd.read_csv(content["download_url"])
+        download_url = content["download_url"]
+
+        # Descargar el archivo CSV desde GitHub
+        csv_response = requests.get(download_url)
+        if csv_response.status_code == 200:
+            df = pd.read_csv(download_url)  # Leer el CSV desde la URL
+        else:
+            df = pd.DataFrame(columns=[
+                "ID REG", "Fecha (dd-mm-aaaa)", "Informe Clínico", "Síntomas",
+                "Diagnóstico", "CIE-11", "Confianza", "Nombre del Doctor", "Rol"
+            ])
+        
         return df, file_sha
     else:
+        # Si el archivo no existe, crear uno vacío con las columnas correctas
         return pd.DataFrame(columns=[
             "ID REG", "Fecha (dd-mm-aaaa)", "Informe Clínico", "Síntomas",
             "Diagnóstico", "CIE-11", "Confianza", "Nombre del Doctor", "Rol"
         ]), None
 
 def save_record_to_github(new_record):
-    """Guarda el registro y lo sube a GitHub."""
-    df, file_sha = load_existing_records()
+    """Guarda el registro y lo sube a GitHub sin sobrescribir los anteriores."""
+    df, file_sha = load_existing_records()  # Cargar registros previos
+
+    # Agregar el nuevo registro al DataFrame
     df = pd.concat([df, pd.DataFrame([new_record])], ignore_index=True)
 
     # Convertir DataFrame a CSV
