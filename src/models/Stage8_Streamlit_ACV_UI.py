@@ -7,6 +7,7 @@
 
 import sys
 import os
+import json
 
 # Obtener el directorio actual del script
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -488,19 +489,58 @@ def classify_image(image, hemorrhagic_model, ischaemic_model):
 def generate_id():
     return f"{random.randint(0, 9999):04}"
 
-def load_existing_records(filepath):
-    if os.path.exists(filepath):
-        return pd.read_csv(filepath)
-    else:
-        return pd.DataFrame(columns=[
-            "ID REG", "Fecha (dd-mm-aaaa)", "Informe Clínico", "Síntomas",
-            "Diagnóstico", "CIE-11", "Confianza", "Nombre del Doctor", "Rol"
-        ])
+# 🚀 Datos de GitHub
+GITHUB_USERNAME = "JorgeLeonardoTorres"  # Tu usuario de GitHub
+REPO_NAME = "SistemaAI_ACV"  # Nombre de tu repositorio
+BRANCH_NAME = "main"  # Rama donde se guardará el archivo
+FILE_PATH = "src/data/ACV_Reg_Data.csv"  # Ruta dentro del repo
+GITHUB_TOKEN = os.getenv("GitHub_Token")  # Token de GitHub (configurado en Streamlit Secrets)
 
-def save_record(new_record, filepath):
-    df = load_existing_records(filepath)
-    df = pd.concat([df, pd.DataFrame([new_record])], ignore_index=True)
-    df.to_csv(filepath, index=False)
+# 📍 URL del archivo en GitHub
+GITHUB_RAW_URL = f"https://api.github.com/repos/{GITHUB_USERNAME}/{REPO_NAME}/contents/{FILE_PATH}"
+
+def load_existing_records():
+    """Carga los registros existentes desde GitHub."""
+    try:
+        response = requests.get(GITHUB_RAW_URL, headers={"Authorization": f"token {GITHUB_TOKEN}"})
+        if response.status_code == 200:
+            content = response.json()
+            file_sha = content.get("sha", None)  # SHA necesario para actualizar el archivo
+            df = pd.read_csv(content["download_url"])
+            return df, file_sha
+        else:
+            return pd.DataFrame(columns=[
+                "ID REG", "Fecha (dd-mm-aaaa)", "Informe Clínico", "Síntomas",
+                "Diagnóstico", "CIE-11", "Confianza", "Nombre del Doctor", "Rol"
+            ]), None
+    except Exception as e:
+        print(f"⚠️ Error al cargar datos desde GitHub: {e}")
+        return pd.DataFrame(), None
+
+def save_record_to_github(new_record):
+    """Guarda el registro y lo sube a GitHub."""
+    df, file_sha = load_existing_records()  # Cargar datos previos
+    df = pd.concat([df, pd.DataFrame([new_record])], ignore_index=True)  # Agregar nuevo registro
+
+    # Convertir a CSV
+    csv_data = df.to_csv(index=False)
+
+    # Subir a GitHub
+    headers = {"Authorization": f"token {GITHUB_TOKEN}"}
+    payload = {
+        "message": "Actualización de registros ACV",
+        "content": json.dumps(csv_data).encode("utf-8").decode("latin1"),  # Codificación segura
+        "branch": BRANCH_NAME
+    }
+    if file_sha:
+        payload["sha"] = file_sha  # Agregar SHA si el archivo ya existe
+
+    response = requests.put(GITHUB_RAW_URL, headers=headers, json=payload)
+
+    if response.status_code in [200, 201]:
+        print("✅ Registro subido correctamente a GitHub.")
+    else:
+        print(f"⚠️ Error al subir archivo: {response.json()}")
 
 # *** --------------------------------- *** *** ------------------------------------- *** 
 
@@ -639,8 +679,9 @@ def main():
                     "Nombre del Doctor": st.session_state.name,
                     "Rol": st.session_state.role
                 }
-                save_record(new_record, "/Users/leotorres/Desktop/Modulos_Software_TFE/SistemaAI_ACV/results/5. Data_Register_IU/ACV_Reg_Data.csv")
-                st.success(f"Registro generado con ID: {record_id}")
+                # Guardar en GitHub
+                save_record_to_github(new_record)
+                st.success(f"Registro generado y guardado con ID: {record_id}")
             
             if st.button("Ir a Fase control y tratamiento ACV"):
                 st.session_state.menu_option = "Fase control y tratamiento ACV"
