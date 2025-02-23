@@ -36,6 +36,10 @@ from datetime import datetime
 from transformers import BertTokenizer
 from torchvision.transforms import Compose, ToTensor, Normalize, Resize
 from huggingface_hub import hf_hub_download
+import base64
+import requests
+from io import BytesIO
+import streamlit as st
 
 # Definir la ruta del proyecto
 project_root = "/Users/leotorres/Desktop/Modulos_Software_TFE/SistemaAI_ACV/src"
@@ -91,21 +95,27 @@ if "diagnosis_message" not in st.session_state:
 # *** --------------------------------- *** *** ------------------------------------- *** 
 
 # Módulo 3.: Función para establecer el fondo
+# URLs de las imágenes en GitHub
+GITHUB_IMAGE_URL_1 = "https://raw.githubusercontent.com/JorgeLeonardoTorres/SistemaAI_ACV/main/src/assets/fondo_sistema_acv.png"
+GITHUB_IMAGE_URL_2 = "https://raw.githubusercontent.com/JorgeLeonardoTorres/SistemaAI_ACV/main/src/assets/fondo_sistema_acv1.png"
+
 def set_background(menu_option):
     if menu_option == "Inicio":
-        background_image = "/Users/leotorres/Desktop/Modulos_Software_TFE/SistemaAI_ACV/src/assets/fondo_sistema_acv.png"
+        image_url = GITHUB_IMAGE_URL_1
     else:
-        background_image = "/Users/leotorres/Desktop/Modulos_Software_TFE/SistemaAI_ACV/src/assets/fondo_sistema_acv1.png"
+        image_url = GITHUB_IMAGE_URL_2
 
-    with open(background_image, "rb") as image_file:
-        encoded_image = base64.b64encode(image_file.read()).decode()
+    response = requests.get(image_url)
+
+    if response.status_code == 200:
+        image = base64.b64encode(BytesIO(response.content).read()).decode()
 
     background_css = f"""
     <style>
     .stApp {{
         /* Fondo principal de la app con superposición */
         background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
-                    url("data:image/png;base64,{encoded_image}");
+                    url("data:image/png;base64,{image}");
         background-size: cover;
         background-attachment: fixed;
         background-position: center;
@@ -227,6 +237,11 @@ def set_background(menu_option):
     </style>
     """
     st.markdown(background_css, unsafe_allow_html=True)
+    else:
+        st.error("Error al cargar la imagen de fondo desde GitHub.")
+
+# Llamar a la función en la interfaz
+set_background(st.session_state.get("menu_option", "Inicio"))
 
 # *** --------------------------------- *** *** ------------------------------------- *** 
 
