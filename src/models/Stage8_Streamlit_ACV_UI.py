@@ -24,7 +24,7 @@ if project_root not in sys.path:
     sys.path.append(project_root)
 
 # Importar BERTMultiLabelClassifier correctamente
-from utils.BERTMultiLabelClassifier import BERTMultiLabelClassifier
+from src.utils.BERTMultiLabelClassifier import BERTMultiLabelClassifier
 
 # *** --------------------------------- *** *** ------------------------------------- *** 
 
