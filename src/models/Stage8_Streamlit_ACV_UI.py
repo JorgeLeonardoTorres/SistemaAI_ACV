@@ -497,51 +497,50 @@ FILE_PATH = "src/data/ACV_Reg_Data.csv"  # Ruta dentro del repo
 GITHUB_TOKEN = os.getenv("GitHub_Token")  # Token de GitHub (configurado en Streamlit Secrets)
 
 # 📍 URL del archivo en GitHub
-GITHUB_RAW_URL = f"https://api.github.com/repos/{GITHUB_USERNAME}/{REPO_NAME}/contents/{FILE_PATH}"
+GITHUB_API_URL = f"https://api.github.com/repos/{GITHUB_USERNAME}/{REPO_NAME}/contents/{FILE_PATH}"
 
 def load_existing_records():
     """Carga los registros existentes desde GitHub."""
-    try:
-        response = requests.get(GITHUB_RAW_URL, headers={"Authorization": f"token {GITHUB_TOKEN}"})
-        if response.status_code == 200:
-            content = response.json()
-            file_sha = content.get("sha", None)  # SHA necesario para actualizar el archivo
-            df = pd.read_csv(content["download_url"])
-            return df, file_sha
-        else:
-            return pd.DataFrame(columns=[
-                "ID REG", "Fecha (dd-mm-aaaa)", "Informe Clínico", "Síntomas",
-                "Diagnóstico", "CIE-11", "Confianza", "Nombre del Doctor", "Rol"
-            ]), None
-    except Exception as e:
-        print(f"⚠️ Error al cargar datos desde GitHub: {e}")
-        return pd.DataFrame(), None
+    headers = {"Authorization": f"token {GITHUB_TOKEN}"}
+
+    response = requests.get(GITHUB_API_URL, headers=headers)
+    if response.status_code == 200:
+        content = response.json()
+        file_sha = content.get("sha", None)  # SHA necesario para actualizar el archivo
+        df = pd.read_csv(content["download_url"])
+        return df, file_sha
+    else:
+        return pd.DataFrame(columns=[
+            "ID REG", "Fecha (dd-mm-aaaa)", "Informe Clínico", "Síntomas",
+            "Diagnóstico", "CIE-11", "Confianza", "Nombre del Doctor", "Rol"
+        ]), None
 
 def save_record_to_github(new_record):
     """Guarda el registro y lo sube a GitHub."""
-    df, file_sha = load_existing_records()  # Cargar datos previos
-    df = pd.concat([df, pd.DataFrame([new_record])], ignore_index=True)  # Agregar nuevo registro
+    df, file_sha = load_existing_records()
+    df = pd.concat([df, pd.DataFrame([new_record])], ignore_index=True)
 
-    # Convertir a CSV
-    csv_data = df.to_csv(index=False)
+    # Convertir DataFrame a CSV
+    csv_data = df.to_csv(index=False).encode("utf-8")
+    base64_csv = base64.b64encode(csv_data).decode("utf-8")
 
-    # Subir a GitHub
+    # Payload para GitHub
     headers = {"Authorization": f"token {GITHUB_TOKEN}"}
     payload = {
         "message": "Actualización de registros ACV",
-        "content": json.dumps(csv_data).encode("utf-8").decode("latin1"),  # Codificación segura
+        "content": base64_csv,
         "branch": BRANCH_NAME
     }
     if file_sha:
-        payload["sha"] = file_sha  # Agregar SHA si el archivo ya existe
+        payload["sha"] = file_sha  # Si el archivo ya existe, se necesita su SHA
 
-    response = requests.put(GITHUB_RAW_URL, headers=headers, json=payload)
+    response = requests.put(GITHUB_API_URL, headers=headers, json=payload)
 
     if response.status_code in [200, 201]:
         print("✅ Registro subido correctamente a GitHub.")
     else:
         print(f"⚠️ Error al subir archivo: {response.json()}")
-
+        
 # *** --------------------------------- *** *** ------------------------------------- *** 
 
 # Módulo 10.: Interfaz de usuario
