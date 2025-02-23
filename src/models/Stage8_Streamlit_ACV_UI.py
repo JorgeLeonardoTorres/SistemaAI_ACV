@@ -5,6 +5,19 @@
 #                                                               Universidad Internacional de La Rioja - UNIR
 #                                                               Trabajo Fin de Estudio - TFE
 
+import sys
+import os
+
+# Obtener la ruta del directorio actual del script
+script_dir = os.path.dirname(os.path.abspath(__file__))
+
+# Obtener la ruta del directorio "src" (subiendo un nivel)
+project_root = os.path.abspath(os.path.join(script_dir, "..", ".."))
+
+# Agregar la ruta "src" al sys.path para que Python reconozca los módulos
+sys.path.append(project_root)
+
+
 # Importación de librerías clave
 import numpy as np
 import pandas as pd
