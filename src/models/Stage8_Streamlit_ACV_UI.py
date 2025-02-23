@@ -35,6 +35,7 @@ from PIL import Image
 from datetime import datetime
 from transformers import BertTokenizer
 from torchvision.transforms import Compose, ToTensor, Normalize, Resize
+from huggingface_hub import hf_hub_download
 
 # Definir la ruta del proyecto
 project_root = "/Users/leotorres/Desktop/Modulos_Software_TFE/SistemaAI_ACV/src"
@@ -233,9 +234,9 @@ def set_background(menu_option):
 @st.cache_resource
 def load_models():
     """Carga los modelos de Faster R-CNN y BERT"""
-    hemorrhagic_model_path = "/Users/leotorres/Desktop/Modulos_Software_TFE/SistemaAI_ACV/results/1. Faster_RCNN_Models/hemorrhagic_best_complete_model.pth"
-    ischaemic_model_path = "/Users/leotorres/Desktop/Modulos_Software_TFE/SistemaAI_ACV/results/1. Faster_RCNN_Models/ischaemic_best_complete_model.pth"
-    bert_model_path = "/Users/leotorres/Desktop/Modulos_Software_TFE/SistemaAI_ACV/results/2. BERT_Model/BERT_augmented_stroke_classifier_train.pth"
+    hemorrhagic_model_path = hf_hub_download(repo_id="JorgeLeonardo/Models_ACV", filename="hemorrhagic_best_complete_model.pth")
+    ischaemic_model_path = hf_hub_download(repo_id="JorgeLeonardo/Models_ACV", filename="ischaemic_best_complete_model.pth")
+    bert_model_path = hf_hub_download(repo_id="JorgeLeonardo/Models_ACV", filename="BERT_augmented_stroke_classifier_train.pth")
     
     hemorrhagic_model = torch.load(hemorrhagic_model_path, map_location=device)
     ischaemic_model = torch.load(ischaemic_model_path, map_location=device)
