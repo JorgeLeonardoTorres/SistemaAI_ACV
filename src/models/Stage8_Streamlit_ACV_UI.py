@@ -8,17 +8,19 @@
 import sys
 import os
 
-# Agregar la carpeta src al path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-
-# Obtener la ruta del directorio actual del script
+# Obtener el directorio actual del script
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
-# Obtener la ruta del directorio "src" (subiendo un nivel)
+# Definir la raíz del proyecto
 project_root = os.path.abspath(os.path.join(script_dir, "..", ".."))
 
-# Agregar la ruta "src" al sys.path para que Python reconozca los módulos
-sys.path.append(project_root)
+# Verificar si la ruta ya está en sys.path
+if project_root not in sys.path:
+    sys.path.append(project_root)
+
+# Importar BERTMultiLabelClassifier con ruta corregida
+from src.utils.BERTMultiLabelClassifier import BERTMultiLabelClassifier
+
 
 import os
 os.system("pip install Pillow")
